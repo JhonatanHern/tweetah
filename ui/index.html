@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Tweetah</title>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="index.css">
+</head>
+<body>
+	
+    <nav>
+      <div class="nav-header">
+		    <div id="nav-name" class="nav-title">
+		      Tweetah
+		    </div>
+		  </div>
+		  <div class="nav-btn">
+		    <label for="nav-check">
+		      <span></span>
+		      <span></span>
+		      <span></span>
+		    </label>
+		  </div>
+		  <input type="checkbox" id="nav-check">
+		  <div class="nav-links">
+		    <a href="/">Tweetah</a>
+		    <a class="inner-link" href="#" data-action="followPeople">Follow people</a>
+		    <a class="inner-link" href="#" data-action="followers">Followers</a>
+		    <a class="inner-link" href="#" data-action="myPeople">My people</a>
+		    <a href="https://holochain.org">Holochain.org</a>
+		    <a href="#" data-action="" onclick="speechSynthesis.speak(new SpeechSynthesisUtterance((new Array(10)).map(()=>'A').join('a')))">AAA</a>
+		  </div>
+    </nav>
+	<section id="section-search">
+		<h2>Search for members</h2>
+		<section id="members-to-follow">
+			
+		</section>
+	</section>
+	<section id="section-dashboard" class="active">
+		<div id="roar">
+			<textarea id="roar-text" placeholder="How do you feel?" style="width: 80%" ></textarea>
+			<button id="roar-button" style="width: 20%" >Roar!</button>
+		</div>
+		<section id="posts">
+		</section>
+	</section>
+	<div id="loading">
+		<span></span>
+		<span></span>
+		<span></span>
+	</div>
+	<script src="index.js"></script>
+</body>
+</html>

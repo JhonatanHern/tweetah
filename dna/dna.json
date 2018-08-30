@@ -1,0 +1,103 @@
+
+{
+    "Version": 1,
+    "UUID": "c50e12be-a6e0-11e8-a691-705ab6aa60cc",
+    "Name": "tweetah",
+    "Properties": {
+        "description": "lowkey clutter",
+        "language": "en"
+    },
+    "PropertiesSchemaFile": "properties_schema.json",
+    "DHTConfig": {
+        "HashType": "sha2-256",
+        "RedundancyFactor": 0
+    },
+    "Zomes": [
+        {
+            "Name": "tweetah",
+            "Description": "Tweetah core",
+            "CodeFile": "tweetah.js",
+            "RibosomeType": "js",
+            "BridgeFuncs": null,
+            "Config": null,
+            "Entries": [
+                {
+                    "Name": "post",
+                    "DataFormat": "json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "profile",
+                    "DataFormat": "json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "private_message",
+                    "DataFormat": "json",
+                    "Sharing": "public"
+                },
+                {
+                    "Name": "profile_link",
+                    "DataFormat": "links"
+                },
+                {
+                    "Name": "follow_link",
+                    "DataFormat": "links"
+                },
+                {
+                    "Name": "follower_link",
+                    "DataFormat": "links"
+                },
+                {
+                    "Name": "post_link",
+                    "DataFormat": "links"
+                },
+                {
+                    "Name": "from_link",
+                    "DataFormat": "links"
+                },
+                {
+                    "Name": "to_link",
+                    "DataFormat": "links"
+                }
+            ],
+            "Functions": [
+                {
+                    "Name": "checkProfile",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "createProfile",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "searchProfiles",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "follow",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "getFollowing",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "post",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                },
+                {
+                    "Name": "getPosts",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                }
+            ]
+        }
+    ]
+}
