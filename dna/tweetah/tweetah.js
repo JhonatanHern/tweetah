@@ -1,7 +1,6 @@
 /*
 	App constants
 */
-
 var APP_ID = App.DNA.Hash,
 	ME = App.Key.Hash
 

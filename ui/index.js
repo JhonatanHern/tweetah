@@ -1,4 +1,5 @@
 const qs = s => Array.from(document.querySelectorAll(s))
+
 const bid = s => document.getElementById(s)
 
 const UI = {

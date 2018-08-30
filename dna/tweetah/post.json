@@ -1,6 +1,6 @@
 {
 	"title": "sampleEntry Schema",
-	"type": "object",
+	"type":"object",
 	"properties": {
 		"content": {
 			"type": "string"
