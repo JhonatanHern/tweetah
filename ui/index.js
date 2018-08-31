@@ -39,6 +39,22 @@ function searchPeople() {
 	})
 }
 
+function searchFollowers() {
+	return new Promise( ( succ , error ) => {
+		fetch( '/fn/tweetah/getFollowers' , {
+			method : 'POST' ,
+			body : ''
+		})
+		.then( r => r.json( ) )
+		.then( data => {
+			succ(data)
+		})
+		.catch(err=>{
+			error(err)
+		})
+	})
+}
+
 const createFollowButton = ( options = {} ) => {
 	const button = document.createElement('button')
 	if (options.click && options.click instanceof Function) {
@@ -46,6 +62,21 @@ const createFollowButton = ( options = {} ) => {
 	}
 	button.innerText = 'follow'
 	return button
+}
+
+function updateFollowing() {
+	return new Promise((succ,erro)=>{
+		fetch('/fn/tweetah/getFollowing',{method:'POST',body:''})
+			.then(r=>r.json())
+			.then(data=>{
+				me.following = data
+				succ()
+			})
+			.catch(err=>{
+				console.log(err)
+				erro()
+			})
+	})
 }
 
 const actions = {
@@ -56,7 +87,11 @@ const actions = {
 		bid('section-search').style.display = 'block'
 		bid( 'members-to-follow' ).innerHTML = ''
 		UI.showLoading()
+		if (!me.following) {
+			await updateFollowing()
+		}
 		let data = await searchPeople()
+		let followingAdresses = me.following.map(u=>u.Entry.address)
 		if ( data && Array.isArray( data ) ) {
 			let div = document.createElement( 'div' )
 			data.forEach( person => {
@@ -64,8 +99,9 @@ const actions = {
 				a.innerText = '@' + person.Entry.name + ' '
 				a.href = person.Hash
 				a.addEventListener('click',e=>e.preventDefault())
+
 				let clicked = false
-				a.appendChild(createFollowButton({
+				let button = createFollowButton({
 					click : e => {
 						if (clicked) {
 							return
@@ -76,7 +112,15 @@ const actions = {
 							e.target.innerText = 'following'
 						})
 					}
-				}))
+				})
+
+				if (followingAdresses.includes(person.Entry.address)) {
+					clicked = true
+					button.style.opacity = .5
+					button.innerText = 'following'
+				}
+
+				a.appendChild(button)
 				div.appendChild( a )
 			})
 			bid( 'members-to-follow' ).appendChild( div )
@@ -101,7 +145,7 @@ const actions = {
 			console.log(err)
 		})
 	},
-	myPeople : async () =>{
+	myPeople : async () => {
 		UI.showLoading()
 		if (me.following) {//already loaded
 			qs('body > section').forEach(section=>{
@@ -134,6 +178,53 @@ const actions = {
 					console.log(err)
 				})
 		}
+	},
+	followers: async () => {
+		qs('body > section').forEach(section=>{
+			section.style.display = 'none'
+		})
+		UI.showLoading()
+		bid('section-followers').style.display = 'block'
+		bid( 'members-followers' ).innerHTML = ''
+		if (!me.following) {
+			await updateFollowing()
+		}
+		let data = await searchFollowers()
+		let followingAdresses = me.following.map(u=>u.Entry.address)
+		if ( data && Array.isArray( data ) ) {
+			let div = document.createElement( 'div' )
+			data.forEach( person => {
+				let a = document.createElement('a')
+				a.innerText = '@' + person.Entry.name + ' '
+				a.href = person.Hash
+				a.addEventListener('click',e=>e.preventDefault())
+
+				let clicked = false
+				let button = createFollowButton({
+					click : e => {
+						if (clicked) {
+							return
+						}
+						clicked = true
+						e.target.style.opacity = .5
+						actions.follow(person,()=>{
+							e.target.innerText = 'following'
+						})
+					}
+				})
+
+				if (followingAdresses.includes(person.Entry.address)) {
+					clicked = true
+					button.style.opacity = .5
+					button.innerText = 'following'
+				}
+
+				a.appendChild(button)
+				div.appendChild( a )
+			})
+			bid( 'members-followers' ).appendChild( div )
+		}
+		UI.hideLoading()
 	}
 }
 

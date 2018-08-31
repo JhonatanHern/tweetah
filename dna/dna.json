@@ -88,6 +88,11 @@
                     "Exposure": "public"
                 },
                 {
+                    "Name": "getFollowers",
+                    "CallingType": "string",
+                    "Exposure": "public"
+                },
+                {
                     "Name": "post",
                     "CallingType": "string",
                     "Exposure": "public"
