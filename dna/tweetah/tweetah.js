@@ -187,18 +187,43 @@ function validateLink(){
 
 /********************************************************/
 
-function createProfile(username){
+function getMyProfileHash() {
+	return query({
+		Return : {
+			Hashes : true
+		},
+		Constrain : {
+			EntryTypes : ["profile"],
+			Count : 1
+		}
+	})[0]
+}
+function getMyProfile() {
+	return query({
+		Return : {
+			Hashes : true,
+			Entries: true
+		},
+		Constrain : {
+			EntryTypes : ["profile"],
+			Count : 1
+		}
+	})[0]
+}
+
+function createProfile( username ){
 	var profile = {
-		name:username,
-		address:ME
+		name : username ,
+		address : ME
 	}
-	var hash = commit('profile',profile)
-	hash = commit('profile_link',{
-		Links:[{
+	var hash = commit( 'profile' , profile )
+	console.log( 'profile Hash: ' + hash )
+	hash = commit( 'profile_link' , {
+		Links : [ {
 			Base:APP_ID,
 			Tag:'profile',
 			Link:hash
-		}]
+		} ]
 	})
 	return hash
 }
@@ -207,17 +232,17 @@ function checkProfile() {
 	try{
 		var profiles = getLinks( APP_ID , 'profile' , { Load : true } )
 		var me = false
-		for (var i = profiles.length - 1; i >= 0; i--) {
-			if(profiles[i].Entry.address === ME){
-				me = profiles[i].Entry
+		for ( var i = profiles.length - 1; i >= 0; i-- ) {
+			if( profiles[i].Entry.address === ME ){
+				me = profiles[ i ].Entry
 				break
 			}
 		}
-		return JSON.stringify(me)
-	}catch(e){
-		console.log('-------------------------------------------------\n')
-		debug(e)
-		console.log('\n-------------------------------------------------')
+		return JSON.stringify( me )
+	}catch( e ){
+		console.log( '-------------------------------------------------\n' )
+		debug( e )
+		console.log( '\n-------------------------------------------------' )
 		return 'error'
 	}
 }
@@ -227,7 +252,7 @@ function checkName(name){
 
 function searchProfiles() {
 	return JSON.stringify(getLinks( APP_ID , 'profile' , { Load : true } ).filter(function(profile) {
-			return true || profile.Entry.address !== ME
+			return profile.Entry.address !== ME
 		}))
 }
 
@@ -235,26 +260,40 @@ function follow(followHash) {
 	var hash = commit('follow_link', {
 		Links: [
 			{
-				Base: ME,
+				Base: getMyProfileHash(),
 				Link: followHash,
 				Tag: 'follow'
 			}
 		]
 	})
-	var hash = commit('follower_link', {
+	if (!hash) {
+		console.log('error on creating follow_link')
+		return
+	}
+	hash = commit('follower_link', {
 		Links: [
 			{
 				Base: followHash,
-				Link: ME,
+				Link: getMyProfileHash(),
 				Tag: 'follower'
 			}
 		]
 	})
+	if (!hash) {
+		console.log('error on creating follower_link')
+		return
+	}
 	return hash
 }
 
-function getFollowing(argument) {
-	return getLinks(ME,'following',{Load:true})
+function getFollowing() {
+	return JSON.stringify(getLinks( getMyProfileHash() , 'follow' , { Load : true } ))
+}
+function getFollowingArray() {
+	return getLinks( getMyProfileHash() , 'follow' , { Load : true } )
+}
+function getFollowers() {
+	return JSON.stringify(getLinks( getMyProfileHash() , 'follower' , { Load : true } ))
 }
 
 function post(message) {
@@ -270,18 +309,9 @@ function post(message) {
 		return ''
 	}
 
-	/*var queryOptions = {
-		Return : {
-			Hashes : true
-		},
-		Constrain : {
-			EntryTypes : ["profile"],
-			Count : 1
-		}
-	}*/
 	return commit('post_link',{
 		Links:[{
-			Base : ME,
+			Base : getMyProfile(),
 			Tag : 'post',
 			Link : hash
 		}]
@@ -291,27 +321,13 @@ function post(message) {
 function getMyProfile() {
 	return query({
 		Return : {
-			Hashes : true,
-			Entries: true
+			Hashes : true
 		},
 		Constrain : {
 			EntryTypes : ["profile"],
 			Count : 1
 		}
-	})[0].Entry
- }
-
-function getFollowing() {
-	return [query({
-			Return : {
-				Hashes : true,
-				Entries: true
-			},
-			Constrain : {
-				EntryTypes : ["profile"],
-				Count : 1
-			}
-		})[0]]
+	})[0]
 }
 
 function getName(hash) {
@@ -352,10 +368,23 @@ function getNames(hashArray) {
 
 function getPosts() {
 	var allPosts = []
-	var following = getFollowing()
+	var following = getFollowingArray().concat(
+		[
+			query({
+				Return : {
+					Hashes : true,
+					Entries: true
+				},
+				Constrain : {
+					EntryTypes : ["profile"],
+					Count : 1
+				}
+			})[0]
+		]
+	)
 	var names = getNames(following.map(function (f) {return f.Entry.address}))
 	following.forEach(function(current) {
-		var links = getLinks( current.Entry.address , 'post' , { Load : true } )
+		var links = getLinks( current.Hash , 'post' , { Load : true } )
 		links = links.map(function (l) {
 			l.ownerName = names.filter(function (name) {
 				return name.address === current.Entry.address

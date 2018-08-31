@@ -20,7 +20,7 @@ const UI = {
 const me = {
 	name : '',
 	followers : [],
-	following : []
+	following : null
 }
 
 function searchPeople() {
@@ -54,41 +54,86 @@ const actions = {
 			section.style.display = 'none'
 		})
 		bid('section-search').style.display = 'block'
+		bid( 'members-to-follow' ).innerHTML = ''
 		UI.showLoading()
 		let data = await searchPeople()
-		bid( 'members-to-follow' ).innerHTML = ''
 		if ( data && Array.isArray( data ) ) {
 			let div = document.createElement( 'div' )
 			data.forEach( person => {
 				let a = document.createElement('a')
 				a.innerText = '@' + person.Entry.name + ' '
 				a.href = person.Hash
-				a.appendChild( createFollowButton({
-						click:e => {
-							e.preventDefault()
-							actions.follow(a.href)
-						}
-					})
-				)
 				a.addEventListener('click',e=>e.preventDefault())
+				let clicked = false
+				a.appendChild(createFollowButton({
+					click : e => {
+						if (clicked) {
+							return
+						}
+						clicked = true
+						e.target.style.opacity = .5
+						actions.follow(person,()=>{
+							e.target.innerText = 'following'
+						})
+					}
+				}))
 				div.appendChild( a )
 			})
 			bid( 'members-to-follow' ).appendChild( div )
 		}
 		UI.hideLoading()
 	},
-	follow : hash => {
+	follow : ( person , callback )=> {
 		fetch('/fn/tweetah/follow',{
 			method:'POST',
-			body:hash
+			body:person.Hash
 		})
 		.then(r=>r.text())
 		.then(text=>{
+			if (!me.following) {
+				me.following = []
+			}
+			me.following.push(person)
 			console.log(text)
+			callback()
 		})
 		.catch(err=>{
 			console.log(err)
 		})
+	},
+	myPeople : async () =>{
+		UI.showLoading()
+		if (me.following) {//already loaded
+			qs('body > section').forEach(section=>{
+				section.style.display = 'none'
+			})
+			bid('section-following').style.display = 'block'
+			bid( 'members-following' ).innerHTML = ''
+			UI.showLoading()
+			let data = me.following
+			if ( data && Array.isArray( data ) ) {
+				let div = document.createElement( 'div' )
+				data.forEach( person => {
+					let a = document.createElement('a')
+					a.innerText = '@' + person.Entry.name + ' '
+					a.href = person.Hash
+					a.addEventListener('click',e=>e.preventDefault())
+					div.appendChild( a )
+				})
+				bid( 'members-following' ).appendChild( div )
+			}
+			UI.hideLoading()
+		} else {//not loaded yet
+			fetch('/fn/tweetah/getFollowing',{method:'POST',body:''})
+				.then(r=>r.json())
+				.then(data=>{
+					me.following = data
+					actions.myPeople()//recursive approach
+				})
+				.catch(err=>{
+					console.log(err)
+				})
+		}
 	}
 }
 
@@ -142,7 +187,7 @@ function updatePosts() {
 				span = document.createElement('span'),
 				p = document.createElement('p')
 
-			span.innerText = post.ownerName
+			span.innerText = '@' + post.ownerName
 			p.innerText = post.Entry.message
 			div.appendChild(span)
 			div.appendChild(p)
@@ -152,7 +197,7 @@ function updatePosts() {
 }
 
 function post (){
-	let message = document.getElementById('roar-text').value
+	let message = document.getElementById('roar-text').value.trim()
 	if (!message) {
 		return
 	}
@@ -182,13 +227,17 @@ async function main() {
 		return
 	}
 	if (!response) {//profile not created yet
-		try{
-			let name
-			await createProfile( name = prompt( 'Insert a username' ) )
-			document.getElementById('nav-name').innerText = '@' + name
-			me.name = name
-		}catch(e){
-			console.log(e)
+		let created = false
+		while(!created){
+			try{
+				let name
+				await createProfile( name = prompt( 'Insert a username' ) )
+				document.getElementById('nav-name').innerText = '@' + name
+				me.name = name
+				created = true
+			}catch(e){
+				console.log(e)
+			}
 		}
 	}else{
 		//set username in user interface
@@ -196,17 +245,26 @@ async function main() {
 		me.name = response.name
 	}
 	UI.hideLoading()
+	updatePosts()
 	assignEvents()
 }
 
 function assignEvents() {
 	document.getElementById('roar-button').addEventListener('click',post)
+	document.getElementById('roar-text').addEventListener('keypress',e=>{
+		if (e.keyCode === 13) { // keyCode 13 is 'Enter'
+			e.preventDefault()
+			post()
+		}
+	})
 	Array.from(document.getElementsByClassName('inner-link')).forEach(link=>{
 		link.addEventListener('click',(e) => {
 			UI.closeMenu()
 			let attribute = link.getAttribute('data-action')
 			if (actions.hasOwnProperty(attribute)) {
 				actions[attribute]()
+			}else{
+				console.log('missing function')
 			}
 		})
 	})

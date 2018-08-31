@@ -20,6 +20,7 @@ body > section{
   display: none;
   height: 100%;
   text-align: center;
+  overflow-y: auto;
 }
 body > section.active{
   display: block;
@@ -88,9 +89,14 @@ nav > #nav-check {
     width: 50px;
     height: 50px;
     padding: 13px;
+    transition-duration: .1s;
+    position: relative;
+    border-radius: 50%;
   }
   nav > .nav-btn > label:hover {
+    transform: rotate(180deg);
     background-color: rgba(0, 0, 0, 0.3);
+    transition-property: transform;
   }
   nav > .nav-btn > label > span {
     display: block;
@@ -176,6 +182,7 @@ button{
   padding: .8em;
   text-align: center;
   display: inline-block;
+  font-weight: bold;
 }
 #roar-text{
   padding: .8em;
@@ -201,7 +208,29 @@ textarea{
 #members-to-follow a button{
   border-radius: .5em;
 }
-#posts{}
-#posts div{}
-#posts p{}
-#posts span{}
+#posts{
+  padding: 1em;
+}
+#posts div{
+  position: relative;
+  width: 100%;
+  background-color: white;
+  padding: .3em;
+  border-radius: 1em;
+  text-align: left;
+  margin-bottom: .5em;
+}
+#posts p{
+  text-align: left;
+  margin: .3em;
+  word-break: break-all;
+}
+#posts span{
+  text-align: left;
+  display: inline-block;
+  font-weight: bold;
+  background-color: #333;
+  color: #f4c20d;
+  padding: .5em;
+  border-radius: .5em;
+}
